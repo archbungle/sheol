@@ -3,6 +3,7 @@
 #Automated VM Appliance creation and installation 
 #Using an "upgrade server" deployed alongside the 
 #target appliance
+#traiano@gmail.com
 #NOTE: The O.S installation component is missing from this script 
 #as it requires additional infrastructure (a preseed configuration and PXE repository
 #for installing the guest OS in the VM. This may be added later.
