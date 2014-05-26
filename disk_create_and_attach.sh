@@ -8,6 +8,7 @@ DISK_SIZE="5GiB"
 VM_UUID=""
 VBD_UUID=""
 NEXT_VBD_POSN=10
+LOCAL_STORAGE_NLABEL="Local Storage 2"
 
 function create_program_disk {
  find_local_sr 
@@ -26,7 +27,7 @@ function create_program_disk {
 
 function find_local_sr {
  #find the uuid of the local storage repository
- SR_NAME_LABEL="Local storage"
+ SR_NAME_LABEL="$LOCAL_STORAGE_NLABEL"
  printf "Searching for SR: \"$SR_NAME_LABEL\"\n"
  SR_UUID=`$XE sr-list name-label="$SR_NAME_LABEL" | grep uuid | cut -d ':' -f 2| sed -s "s/^\s//g"`
  printf "D : $SR_UUID\n"
@@ -50,7 +51,7 @@ function get_next_vbd_position {
  #get the next available virtual block device
  #attachement ID/position on the VM
  VM_UUID=$1
- NEXT_VBD_POSN=`$XE vm-param-list uuid=$VM_UUID | grep allowed-VBD-devices| cut -d ":" -f 2| cut -d ";" -f 1| sed -s "s/^\s//g"`
+NEXT_VBD_POSN=`$XE vm-param-list uuid=$VM_UUID | grep allowed-VBD-devices| cut -d ":" -f 2| cut -d ";" -f 1| sed -s "s/^\s//g"`
  printf "D (get_next_vbd_position): $NEXT_VBD_POSN\n"
 }
 
@@ -73,4 +74,5 @@ function attach_program_disk {
 
 create_program_disk
 attach_program_disk $VBD_UUID
+
 

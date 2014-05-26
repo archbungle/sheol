@@ -1,0 +1,153 @@
+[root@xenserver auto-upgrader]# ./disk_create_and_attach.sh 
+Searching for SR: "Local Storage 2"
+D : 3774802e-2bd6-7ec2-13f8-c44c34035a79
+SR UUID: 3774802e-2bd6-7ec2-13f8-c44c34035a79
+TIMESTAMP: 1400782260
+D (find_vm_uuid): 7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24D (new virtual disk ID): c98ea2d2-4940-4d6d-a22d-b2f4f8d483a8
+uuid ( RO)                : c98ea2d2-4940-4d6d-a22d-b2f4f8d483a8
+          name-label ( RW): pgm_disk_1400782260
+    name-description ( RW): 
+             sr-uuid ( RO): 3774802e-2bd6-7ec2-13f8-c44c34035a79
+        virtual-size ( RO): 5368709120
+            sharable ( RO): false
+           read-only ( RO): false
+
+
+D (get_next_vbd_position): 1
+D: /opt/xensource/bin/xe vbd-create vm-uuid=7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24 device=1 vdi-uuid=c98ea2d2-4940-4d6d-a22d-b2f4f8d483a8 bootable=false mode=RW type=Disk 
+D (virtual block device uuid): 3534b6f1-267b-fddc-336c-d27cfcad8019 
+D (attach_program_disk): xe vbd-plug uuid=3534b6f1-267b-fddc-336c-d27cfcad8019 ()
+[root@xenserver auto-upgrader]# 
+
+---
+
+Internally (in the guest) the new disk attached is detected as follows:
+
+
+---
+root@ic2-it-001:~# 
+root@ic2-it-001:~# cat /proc/partitions
+major minor  #blocks  name
+
+ 202        0    8388608 xvda
+ 202        1    7993344 xvda1
+ 202        2          1 xvda2
+ 202        5     392192 xvda5
+root@ic2-it-001:~# 
+root@ic2-it-001:~# 
+root@ic2-it-001:~# 
+root@ic2-it-001:~# cat /proc/partitions
+major minor  #blocks  name
+
+ 202        0    8388608 xvda
+ 202        1    7993344 xvda1
+ 202        2          1 xvda2
+ 202        5     392192 xvda5
+ 202       16    5242880 xvdb
+root@ic2-it-001:~# 
+
+---
+
+
+
+---
+[root@xenserver auto-upgrader]# ./disk_create_and_attach.sh 
+Searching for SR: "Local Storage 2"
+D : 3774802e-2bd6-7ec2-13f8-c44c34035a79
+SR UUID: 3774802e-2bd6-7ec2-13f8-c44c34035a79
+TIMESTAMP: 1400785876
+D (find_vm_uuid): 7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24D (new virtual disk ID): b80362a4-7f06-4262-bb5a-048348d3fe81
+uuid ( RO)                : b80362a4-7f06-4262-bb5a-048348d3fe81
+          name-label ( RW): pgm_disk_1400785876
+    name-description ( RW): 
+             sr-uuid ( RO): 3774802e-2bd6-7ec2-13f8-c44c34035a79
+        virtual-size ( RO): 5368709120
+            sharable ( RO): false
+           read-only ( RO): false
+
+
+D (get_next_vbd_position): 2
+D: /opt/xensource/bin/xe vbd-create vm-uuid=7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24 device=2 vdi-uuid=b80362a4-7f06-4262-bb5a-048348d3fe81 bootable=false mode=RW type=Disk 
+D (virtual block device uuid): 00c3af94-a663-5c54-5a0d-8f539224ae83 
+D (attach_program_disk): xe vbd-plug uuid=00c3af94-a663-5c54-5a0d-8f539224ae83 ()
+[root@xenserver auto-upgrader]# 
+[root@xenserver auto-upgrader]# 
+---
+
+
+BUT there seem to be more than 2 disks attached to the VM:
+
+
+
+root@ic2-it-001:~# cat 000-default 
+cat: 000-default: No such file or directory
+root@ic2-it-001:~# cat /proc/partitions 
+major minor  #blocks  name
+
+ 202       16    5242880 xvdb
+ 202        0    8388608 xvda
+ 202        1    7993344 xvda1
+ 202        2          1 xvda2
+ 202        5     392192 xvda5
+ 202       32    5242880 xvdc
+root@ic2-it-001:~# 
+root@ic2-it-001:~# 
+root@ic2-it-001:~# 
+
+
+Result of detaching the disks and powering the VM up:
+
+
+[root@xenserver auto-upgrader]# ./disk_detach_and_destroy.sh 
+D (find_vm_uuid): 7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24Listing disk devices currently attached to ic2-install-test-vm-001
+D: VM_STATE: 1
+D: SHUTDOWN_RESULT:  
+D: VM_STATE: 0
+D: Waiting for ic2-install-test-vm-001 to power off  (0)...
+D: Powering up VM 7ccdb8b5-2ceb-569d-eec3-9b45d45d0e24 
+D: POWER UP RESULT:  
+D: VM_STATE: 1
+D: Waiting for ic2-install-test-vm-001 to power up ...
+[root@xenserver auto-upgrader]# 
+---
+
+
+And on the VM console:
+
+----
+root@ic2-it-001:~# 
+Broadcast message from root@ic2-it-001 (Fri May 23 03:13:46 2014):
+
+The system is going down for system halt NOW!
+debug1: channel 0: free: client-session, nchannels 1
+Connection to 10.9.2.177 closed by remote host.
+Connection to 10.9.2.177 closed.
+Transferred: sent 4352, received 5712 bytes, in 137.5 seconds
+Bytes per second: sent 31.6, received 41.5
+debug1: Exit status -1
+197-84-166-29:~ traianow$ 
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
